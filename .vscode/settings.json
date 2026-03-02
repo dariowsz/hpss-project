@@ -1,0 +1,20 @@
+{
+    // 
+    // Editor settings
+    // 
+    "editor.rulers": [
+        88
+    ],
+    "editor.wordWrapColumn": 88,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    },
+    // 
+    // Python settings
+    // 
+    "python.testing.pytestEnabled": true,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+}
