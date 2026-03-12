@@ -52,7 +52,7 @@ for lambda_reg in [0.05, 0.1, 0.2, 0.5, 1.0]:
     p_time = librosa.istft(P_complex, hop_length=hop)
 
     # Save outputs
-    sf.write(f"../outputs/harmonic_lambda_{lambda_reg}.wav", h_time, sr)
-    sf.write(f"../outputs/percussive_lambda_{lambda_reg}.wav", p_time, sr)
+    sf.write(f"../outputs/1/harmonic_lambda_{lambda_reg}.wav", h_time, sr)
+    sf.write(f"../outputs/1/percussive_lambda_{lambda_reg}.wav", p_time, sr)
 
 # %%
