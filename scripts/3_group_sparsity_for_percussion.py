@@ -37,7 +37,7 @@ for lambda_reg in [0.05, 0.1, 0.2, 0.5]:
     )
 
     problem = cp.Problem(objective)
-    problem.solve(solver=cp.SCS, verbose=True)
+    problem.solve(solver=cp.SCS, verbose=True)  # ADMM solver
 
     H_mag = H.value
     P_mag = X_mag - H_mag
