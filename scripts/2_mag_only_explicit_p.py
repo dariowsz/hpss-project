@@ -1,3 +1,6 @@
+import argparse
+from pathlib import Path
+
 import cvxpy as cp
 import librosa
 import numpy as np
@@ -12,62 +15,84 @@ def time_difference_matrix(T):
     return D
 
 
-x, sr = librosa.load("../audio/simple_mix.wav", sr=22050, mono=True)
+def parse_args():
+    script_dir = Path(__file__).resolve().parent
+    default_audio = script_dir.parent / "audio" / "simple_mix.wav"
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--audio-path", type=Path, default=default_audio)
+    return parser.parse_args()
 
-n_fft = 1024
-hop = 256
-audio_len_sec = 4
 
-samples = audio_len_sec * sr
-X = librosa.stft(x[:samples], n_fft=n_fft, hop_length=hop)
+def main():
+    args = parse_args()
+    audio_path = args.audio_path.resolve()
+    script_dir = Path(__file__).resolve().parent
 
-X_mag = np.abs(X)  # For first version, use magnitude only (simpler & real-valued)
-F, T = X_mag.shape
-print(f"F = {F}")
-print(f"T = {T}")
+    x, sr = librosa.load(str(audio_path), sr=22050, mono=True)
 
-Dt = time_difference_matrix(T)
-Df = time_difference_matrix(F)
+    n_fft = 1024
+    hop = 256
+    audio_len_sec = 4
 
-for lambda_reg_1 in [0.05, 0.1, 0.2, 0.5]:
-    for lambda_reg_2 in [0.05, 0.1, 0.2, 0.5]:
-        H = cp.Variable((F, T))
-        P = cp.Variable((F, T))
+    samples = audio_len_sec * sr
+    X = librosa.stft(x[:samples], n_fft=n_fft, hop_length=hop)
 
-        DtH = H @ Dt.T  # shape (F, T-1)
-        DfP = Df @ P  # shape (F-1, T)
+    X_mag = np.abs(X)  # For first version, use magnitude only (simpler & real-valued)
+    F, T = X_mag.shape
+    print(f"Audio: {audio_path}")
+    print(f"F = {F}")
+    print(f"T = {T}")
 
-        objective = cp.Minimize(
-            cp.norm1(DtH) + lambda_reg_1 * cp.norm1(DfP) + lambda_reg_2 * cp.norm1(P)
-        )
+    Dt = time_difference_matrix(T)
+    Df = time_difference_matrix(F)
+    output_dir = script_dir.parent / "outputs" / "2" / audio_path.stem
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-        constraints = [X_mag == H + P]
+    for lambda_reg_1 in [0.05, 0.1, 0.2, 0.5]:
+        for lambda_reg_2 in [0.05, 0.1, 0.2, 0.5]:
+            H = cp.Variable((F, T))
+            P = cp.Variable((F, T))
 
-        problem = cp.Problem(objective, constraints)
-        problem.solve(solver=cp.SCS, verbose=True)
+            DtH = H @ Dt.T  # shape (F, T-1)
+            DfP = Df @ P  # shape (F-1, T)
 
-        H_mag = H.value
-        P_mag = P.value
+            objective = cp.Minimize(
+                cp.norm1(DtH) + lambda_reg_1 * cp.norm1(DfP) + lambda_reg_2 * cp.norm1(P)
+            )
 
-        # Use original phase
-        phase = np.exp(1j * np.angle(X))
+            constraints = [X_mag == H + P]
 
-        H_complex = H_mag * phase
-        P_complex = P_mag * phase
+            problem = cp.Problem(objective, constraints)
+            problem.solve(solver=cp.SCS, verbose=True)
 
-        h_time = librosa.istft(H_complex, hop_length=hop)
-        p_time = librosa.istft(P_complex, hop_length=hop)
+            H_mag = H.value
+            P_mag = P.value
 
-        # Save outputs
-        sf.write(
-            f"../outputs/2/harmonic_lambda1_{lambda_reg_1}_lambda2_{lambda_reg_2}.wav",
-            h_time,
-            sr,
-        )
-        sf.write(
-            f"../outputs/2/percussive_lambda1_{lambda_reg_1}_lambda2_{lambda_reg_2}.wav",
-            p_time,
-            sr,
-        )
+            # Use original phase
+            phase = np.exp(1j * np.angle(X))
+
+            H_complex = H_mag * phase
+            P_complex = P_mag * phase
+
+            h_time = librosa.istft(H_complex, hop_length=hop)
+            p_time = librosa.istft(P_complex, hop_length=hop)
+
+            # Save outputs
+            sf.write(
+                output_dir
+                / f"harmonic_lambda1_{lambda_reg_1}_lambda2_{lambda_reg_2}.wav",
+                h_time,
+                sr,
+            )
+            sf.write(
+                output_dir
+                / f"percussive_lambda1_{lambda_reg_1}_lambda2_{lambda_reg_2}.wav",
+                p_time,
+                sr,
+            )
+
+
+if __name__ == "__main__":
+    main()
 
 # %%
