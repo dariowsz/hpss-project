@@ -10,6 +10,7 @@ SCRIPT_NAMES = [
     "3_group_sparsity_for_percussion.py",
     "4_robust_pca.py",
     "5_complementary_diffusion.py",
+    "6_phase_aware_pds.py",
 ]
 
 
