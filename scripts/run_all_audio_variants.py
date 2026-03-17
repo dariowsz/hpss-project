@@ -9,6 +9,7 @@ SCRIPT_NAMES = [
     "2_mag_only_explicit_p.py",
     "3_group_sparsity_for_percussion.py",
     "4_robust_pca.py",
+    "5_complementary_diffusion.py",
 ]
 
 
