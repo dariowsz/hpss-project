@@ -10,20 +10,24 @@ import museval
 import numpy as np
 
 # %%
-gt_harmonic, sr = librosa.load("../audio/simple_harmonic.wav", sr=22050, mono=True)
-gt_percussion, sr = librosa.load("../audio/simple_percussion.wav", sr=22050, mono=True)
+track = "full"
+
+gt_harmonic, sr = librosa.load(f"../audio/{track}_harmonic.wav", sr=22050, mono=True)
+gt_percussion, sr = librosa.load(
+    f"../audio/{track}_percussion.wav", sr=22050, mono=True
+)
 
 table_rows = []
 
 for lambda1_val in [0.05, 0.1, 0.2, 0.5]:
     for lambda2_val in [0.05, 0.1, 0.2, 0.5]:
         gen_harmonic, sr = librosa.load(
-            f"../outputs/2/harmonic_lambda1_{lambda1_val}_lambda2_{lambda2_val}.wav",
+            f"../outputs/2/{track}_mix/harmonic_lambda1_{lambda1_val}_lambda2_{lambda2_val}.wav",
             sr=22050,
             mono=True,
         )
         gen_percussion, sr = librosa.load(
-            f"../outputs/2/percussive_lambda1_{lambda1_val}_lambda2_{lambda2_val}.wav",
+            f"../outputs/2/{track}_mix/percussive_lambda1_{lambda1_val}_lambda2_{lambda2_val}.wav",
             sr=22050,
             mono=True,
         )
@@ -66,7 +70,7 @@ headers = [
     "P_SAR",
 ]
 
-output_table_path = "../evaluation/museval_lambda_comparison.csv"
+output_table_path = f"../evaluation/{track}_mix/2_experiment_eval.csv"
 
 line = " | ".join([f"{h:>8}" for h in headers])
 print(line)

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Convex Sparse HPSS Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+            max-width: 1200px;
+            /* wider */
+            margin: auto;
+            padding: 40px 20px;
+            background: #fafafa;
+            color: #222;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h3 {
+            margin-bottom: 10px;
+            color: #444;
+        }
+
+        .row {
+            margin-bottom: 30px;
+        }
+
+        .samples {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            /* 3 per row */
+            gap: 20px;
+        }
+
+        .samples.sample2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .sample {
+            background: white;
+            padding: 12px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.15s ease;
+        }
+
+        .sample:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        audio {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        img {
+            width: 100%;
+            border-radius: 6px;
+        }
+
+        .caption {
+            font-size: 13px;
+            color: #666;
+            margin-top: 6px;
+        }
+
+        /* collapsible sections */
+        details {
+            margin-top: 30px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        summary.section-title {
+            font-size: 22px;
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none;
+            padding-bottom: 6px;
+        }
+
+        summary.section-title::-webkit-details-marker {
+            display: none;
+        }
+
+        summary.section-title::after {
+            content: "▾";
+            float: right;
+            transition: transform 0.2s ease;
+        }
+
+        details[open] summary.section-title::after {
+            transform: rotate(180deg);
+        }
+
+        /* responsive fallback */
+        @media (max-width: 900px) {
+            .samples {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .samples {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Convex Sparse Harmonic–Percussive Source Separation Demo</h1>
+
+    <details open>
+        <summary class="section-title">Ground Truth</summary>
+
+        <div class="row">
+            <h3>Full Track</h3>
+            <div class="samples">
+                <div class="sample">
+                    <audio controls src="audio/full_mix_short.wav"></audio>
+                    <img src="spectrograms/gt_short/full_mix_spectrogram.png">
+                    <div class="caption">Mixture</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="audio/full_harmonic_short.wav"></audio>
+                    <img src="spectrograms/gt_short/full_harmonic_spectrogram.png">
+                    <div class="caption">Harmonic Component</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="audio/full_percussion_short.wav"></audio>
+                    <img src="spectrograms/gt_short/full_percussion_spectrogram.png">
+                    <div class="caption">Percussive Component</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <h3>Simple Track</h3>
+            <div class="samples">
+                <div class="sample">
+                    <audio controls src="audio/simple_mix_short.wav"></audio>
+                    <img src="spectrograms/gt_short/simple_mix_spectrogram.png">
+                    <div class="caption">Mixture</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="audio/simple_harmonic_short.wav"></audio>
+                    <img src="spectrograms/gt_short/simple_harmonic_spectrogram.png">
+                    <div class="caption">Harmonic Component</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="audio/simple_percussion_short.wav"></audio>
+                    <img src="spectrograms/gt_short/simple_percussion_spectrogram.png">
+                    <div class="caption">Percussive Component</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <h3>Simplest Track</h3>
+            <div class="samples">
+                <div class="sample">
+                    <audio controls src="audio/simplest_mix_short.wav"></audio>
+                    <img src="spectrograms/gt_short/simplest_mix_spectrogram.png">
+                    <div class="caption">Mixture</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="audio/simplest_harmonic_short.wav"></audio>
+                    <img src="spectrograms/gt_short/simplest_harmonic_spectrogram.png">
+                    <div class="caption">Harmonic Component</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="audio/simplest_percussion_short.wav"></audio>
+                    <img src="spectrograms/gt_short/simplest_percussion_spectrogram.png">
+                    <div class="caption">Percussive Component</div>
+                </div>
+            </div>
+        </div>
+    </details>
+
+    <details>
+        <summary class="section-title">Experiment 1 - TV + L1</summary>
+
+        <div class="row">
+            <h3>Full Track</h3>
+            <div class="samples sample2">
+                <div class="sample">
+                    <audio controls src="outputs/1/full_mix/harmonic_lambda_0.1.wav"></audio>
+                    <img src="spectrograms/best_exp_1/full_harmonic_lambda_0.1_spectrogram.png">
+                    <div class="caption">Harmonic Component</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="outputs/1/full_mix/percussive_lambda_0.1.wav"></audio>
+                    <img src="spectrograms/best_exp_1/full_percussive_lambda_0.1_spectrogram.png">
+                    <div class="caption">Percussive Component</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <h3>Simple Track</h3>
+            <div class="samples sample2">
+                <div class="sample">
+                    <audio controls src="outputs/1/simple_mix/harmonic_lambda_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_1/simple_harmonic_lambda_0.05_spectrogram.png">
+                    <div class="caption">Harmonic Component</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="outputs/1/simple_mix/percussive_lambda_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_1/simple_percussive_lambda_0.05_spectrogram.png">
+                    <div class="caption">Percussive Component</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <h3>Simplest Track</h3>
+            <div class="samples sample2">
+                <div class="sample">
+                    <audio controls src="outputs/1/simplest_mix/harmonic_lambda_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_1/simplest_harmonic_lambda_0.05_spectrogram.png">
+                    <div class="caption">Harmonic Component</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="outputs/1/simplest_mix/percussive_lambda_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_1/simplest_percussive_lambda_0.05_spectrogram.png">
+                    <div class="caption">Percussive Component</div>
+                </div>
+            </div>
+        </div>
+    </details>
+
+    <details>
+        <summary class="section-title">Experiment 2 - Freq. TV + Sparse</summary>
+
+        <div class="row">
+            <h3>Full Track</h3>
+            <div class="samples sample2">
+                <div class="sample">
+                    <audio controls src="outputs/2/full_mix/harmonic_lambda1_0.05_lambda2_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_2/full_harmonic_lambda1_0.05_lambda2_0.05_spectrogram.png">
+                    <div class="caption">Harmonic Component</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="outputs/2/full_mix/percussive_lambda1_0.05_lambda2_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_2/full_percussive_lambda1_0.05_lambda2_0.05_spectrogram.png">
+                    <div class="caption">Percussive Component</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <h3>Simple Track</h3>
+            <div class="samples sample2">
+                <div class="sample">
+                    <audio controls src="outputs/2/simple_mix/harmonic_lambda1_0.05_lambda2_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_2/simple_harmonic_lambda1_0.05_lambda2_0.05_spectrogram.png">
+                    <div class="caption">Harmonic Component</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="outputs/2/simple_mix/percussive_lambda1_0.05_lambda2_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_2/simple_percussive_lambda1_0.05_lambda2_0.05_spectrogram.png">
+                    <div class="caption">Percussive Component</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <h3>Simplest Track</h3>
+            <div class="samples sample2">
+                <div class="sample">
+                    <audio controls src="outputs/2/simplest_mix/harmonic_lambda1_0.05_lambda2_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_2/simplest_harmonic_lambda1_0.05_lambda2_0.05_spectrogram.png">
+                    <div class="caption">Harmonic Component</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="outputs/2/simplest_mix/percussive_lambda1_0.05_lambda2_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_2/simplest_percussive_lambda1_0.05_lambda2_0.05_spectrogram.png">
+                    <div class="caption">Percussive Component</div>
+                </div>
+            </div>
+        </div>
+    </details>
+
+    <details>
+        <summary class="section-title">Experiment 3 - Group Sparsity</summary>
+
+        <div class="row">
+            <h3>Full Track</h3>
+            <div class="samples sample2">
+                <div class="sample">
+                    <audio controls src="outputs/3/full_mix/harmonic_lambda_0.2.wav"></audio>
+                    <img src="spectrograms/best_exp_3/full_harmonic_lambda_0.2_spectrogram.png">
+                    <div class="caption">Harmonic Component</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="outputs/3/full_mix/percussive_lambda_0.2.wav"></audio>
+                    <img src="spectrograms/best_exp_3/full_percussive_lambda_0.2_spectrogram.png">
+                    <div class="caption">Percussive Component</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <h3>Simple Track</h3>
+            <div class="samples sample2">
+                <div class="sample">
+                    <audio controls src="outputs/3/simple_mix/harmonic_lambda_0.2.wav"></audio>
+                    <img src="spectrograms/best_exp_3/simple_harmonic_lambda_0.2_spectrogram.png">
+                    <div class="caption">Harmonic Component</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="outputs/3/simple_mix/percussive_lambda_0.2.wav"></audio>
+                    <img src="spectrograms/best_exp_3/simple_percussive_lambda_0.2_spectrogram.png">
+                    <div class="caption">Percussive Component</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <h3>Simplest Track</h3>
+            <div class="samples sample2">
+                <div class="sample">
+                    <audio controls src="outputs/3/simplest_mix/harmonic_lambda_0.1.wav"></audio>
+                    <img src="spectrograms/best_exp_3/simplest_harmonic_lambda_0.1_spectrogram.png">
+                    <div class="caption">Harmonic Component</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="outputs/3/simplest_mix/percussive_lambda_0.1.wav"></audio>
+                    <img src="spectrograms/best_exp_3/simplest_percussive_lambda_0.1_spectrogram.png">
+                    <div class="caption">Percussive Component</div>
+                </div>
+            </div>
+        </div>
+    </details>
+
+    <details>
+        <summary class="section-title">Experiment 4 - Robust PCA</summary>
+
+        <div class="row">
+            <h3>Full Track</h3>
+            <div class="samples sample2">
+                <div class="sample">
+                    <audio controls src="outputs/4/full_mix/harmonic_lambda_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_4/full_harmonic_lambda_0.05_spectrogram.png">
+                    <div class="caption">Harmonic Component</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="outputs/4/full_mix/percussive_lambda_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_4/full_percussive_lambda_0.05_spectrogram.png">
+                    <div class="caption">Percussive Component</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <h3>Simple Track</h3>
+            <div class="samples sample2">
+                <div class="sample">
+                    <audio controls src="outputs/4/simple_mix/harmonic_lambda_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_4/simple_harmonic_lambda_0.05_spectrogram.png">
+                    <div class="caption">Harmonic Component</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="outputs/4/simple_mix/percussive_lambda_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_4/simple_percussive_lambda_0.05_spectrogram.png">
+                    <div class="caption">Percussive Component</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <h3>Simplest Track</h3>
+            <div class="samples sample2">
+                <div class="sample">
+                    <audio controls src="outputs/4/simplest_mix/harmonic_lambda_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_4/simplest_harmonic_lambda_0.05_spectrogram.png">
+                    <div class="caption">Harmonic Component</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="outputs/4/simplest_mix/percussive_lambda_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_4/simplest_percussive_lambda_0.05_spectrogram.png">
+                    <div class="caption">Percussive Component</div>
+                </div>
+            </div>
+        </div>
+    </details>
+
+    <details>
+        <summary class="section-title">Experiment 5 - Phase-Aware Harmonic/Percussive Source Separation (Paper
+            Implementation)</summary>
+
+        <div class="row">
+            <h3>Full Track</h3>
+            <div class="samples sample2">
+                <div class="sample">
+                    <audio controls src="outputs/7/full_mix/harmonic_lambda_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_7/full_harmonic_lambda_0.05_spectrogram.png">
+                    <div class="caption">Harmonic Component</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="outputs/7/full_mix/percussive_lambda_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_7/full_percussive_lambda_0.05_spectrogram.png">
+                    <div class="caption">Percussive Component</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <h3>Simple Track</h3>
+            <div class="samples sample2">
+                <div class="sample">
+                    <audio controls src="outputs/7/simple_mix/harmonic_lambda_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_7/simple_harmonic_lambda_0.05_spectrogram.png">
+                    <div class="caption">Harmonic Component</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="outputs/7/simple_mix/percussive_lambda_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_7/simple_percussive_lambda_0.05_spectrogram.png">
+                    <div class="caption">Percussive Component</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <h3>Simplest Track</h3>
+            <div class="samples sample2">
+                <div class="sample">
+                    <audio controls src="outputs/7/simplest_mix/harmonic_lambda_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_7/simplest_harmonic_lambda_0.05_spectrogram.png">
+                    <div class="caption">Harmonic Component</div>
+                </div>
+                <div class="sample">
+                    <audio controls src="outputs/7/simplest_mix/percussive_lambda_0.05.wav"></audio>
+                    <img src="spectrograms/best_exp_7/simplest_percussive_lambda_0.05_spectrogram.png">
+                    <div class="caption">Percussive Component</div>
+                </div>
+            </div>
+        </div>
+    </details>
+
+</body>
+
+</html>

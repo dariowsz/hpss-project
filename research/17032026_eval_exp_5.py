@@ -10,7 +10,7 @@ import museval
 import numpy as np
 
 # %%
-track = "full"
+track = "simplest"
 
 gt_harmonic, sr = librosa.load(f"../audio/{track}_harmonic.wav", sr=22050, mono=True)
 gt_percussion, sr = librosa.load(
@@ -19,14 +19,14 @@ gt_percussion, sr = librosa.load(
 
 table_rows = []
 
-for lambda_val in [0.05, 0.1, 0.2, 0.5]:
+for lambda_val in [0.05]:
     gen_harmonic, sr = librosa.load(
-        f"../outputs/4/{track}_mix/harmonic_lambda_{lambda_val}.wav",
+        f"../outputs/7/{track}_mix/harmonic_lambda_{lambda_val}.wav",
         sr=22050,
         mono=True,
     )
     gen_percussion, sr = librosa.load(
-        f"../outputs/4/{track}_mix/percussive_lambda_{lambda_val}.wav",
+        f"../outputs/7/{track}_mix/percussive_lambda_{lambda_val}.wav",
         sr=22050,
         mono=True,
     )
@@ -65,7 +65,7 @@ headers = [
     "P_SAR",
 ]
 
-output_table_path = f"../evaluation/{track}_mix/4_experiment_eval.csv"
+output_table_path = f"../evaluation/{track}_mix/7_experiment_eval.csv"
 
 line = " | ".join([f"{h:>8}" for h in headers])
 print(line)
